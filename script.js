@@ -12,6 +12,28 @@ async function loadExcel() {
     const workbook = XLSX.read(data, { type: 'array' });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
+    stations = XLSX.utils.sheet_to_json(sheet).map(station => {
+    const englishNames = station["English (Alternative Name)"].split(" (");
+    const primaryEnglish = englishNames[0].trim();
+    const alternateEnglish = englishNames[1] ? englishNames[1].replace(")", "").trim() : null;
+
+    const koreanNames = station["Korean (Hanja)"].split(" (");
+    const primaryKorean = koreanNames[0].trim();
+    const alternateKorean = koreanNames[1] ? koreanNames[1].replace(")", "").trim() : null;
+
+    return {
+        name: primaryEnglish,
+        altName: alternateEnglish,
+        korean: primaryKorean,
+        altKorean: alternateKorean,
+        distance: station["Distance from Start"],
+        line: station["Transfer Line"],
+        province: station["Province"]
+    };
+});
+
+console.log(stations); // Debug line to check the station data
+
     // Convert sheet data to JSON format with updated column names and split names
     stations = XLSX.utils.sheet_to_json(sheet).map(station => {
         // Extract primary and alternate names from English and Korean fields
