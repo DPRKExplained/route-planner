@@ -4,28 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Route Planner</title>
-    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <h1>Route Planner</h1>
 
-    <h1>Route Planner Demo</h1>
+    <label for="startStation">Starting Station:</label>
+    <input type="text" id="startStation" placeholder="Enter starting station">
 
-    <div class="form-group">
-        <label for="startStation">Starting Station</label>
-        <input type="text" id="startStation" placeholder="Type to search...">
-    </div>
+    <label for="destinationStation">Destination Station:</label>
+    <input type="text" id="destinationStation" placeholder="Enter destination station">
 
-    <div class="form-group">
-        <label for="endStation">Destination Station</label>
-        <input type="text" id="endStation" placeholder="Type to search...">
-    </div>
+    <button id="findRouteButton">Find Route</button>
 
-    <button onclick="findRoute()">Find Route</button>
+    <div id="result"></div>
 
-    <div id="routeOutput" class="route-output">Select stations to see the route details here.</div>
-
-    <!-- SheetJS library to read Excel files -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
