@@ -10,7 +10,10 @@ async function loadExcel() {
 
     // Read the Excel file using SheetJS
     const workbook = XLSX.read(data, { type: 'array' });
+    console.log(workbook);  // Log workbook to verify
+
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    console.log(sheet);  // Log sheet to verify
 
     // Convert sheet data to JSON format with updated column names and split names
     stations = XLSX.utils.sheet_to_json(sheet)
