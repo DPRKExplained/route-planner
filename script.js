@@ -14,12 +14,16 @@ async function loadExcel() {
 
     // Convert sheet data to JSON format with updated column names and split names
     stations = XLSX.utils.sheet_to_json(sheet).map(station => {
-        // Check if English and Korean names exist, then split
-        const englishNames = station["English (Alternative Name)"] ? station["English (Alternative Name)"].split(" (") : [""];
+        // Check if each column exists before accessing it
+        const englishColumn = station["English (Alternative Name)"] || "";
+        const koreanColumn = station["Korean (Hanja)"] || "";
+
+        // Split English and Korean names, handling missing values
+        const englishNames = englishColumn.split(" (");
         const primaryEnglish = englishNames[0].trim();
         const alternateEnglish = englishNames[1] ? englishNames[1].replace(")", "").trim() : null;
 
-        const koreanNames = station["Korean (Hanja)"] ? station["Korean (Hanja)"].split(" (") : [""];
+        const koreanNames = koreanColumn.split(" (");
         const primaryKorean = koreanNames[0].trim();
         const alternateKorean = koreanNames[1] ? koreanNames[1].replace(")", "").trim() : null;
 
@@ -28,9 +32,9 @@ async function loadExcel() {
             altName: alternateEnglish,
             korean: primaryKorean,
             altKorean: alternateKorean,
-            distance: station["Distance from Start"],
-            line: station["Transfer Line"],
-            province: station["Province"]
+            distance: station["Distance from Start"] || 0,  // Use 0 if distance is missing
+            line: station["Transfer Line"] || "Unknown Line",  // Default for missing line
+            province: station["Province"] || "Unknown Province"  // Default for missing province
         };
     });
 
@@ -39,7 +43,6 @@ async function loadExcel() {
 
     // Populate autocomplete with stations
     populateAutocomplete();
-}
 
 // Populate autocomplete dropdown for station selection
 function populateAutocomplete() {
