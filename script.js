@@ -12,14 +12,30 @@ async function loadExcel() {
     const workbook = XLSX.read(data, { type: 'array' });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-    // Convert sheet data to JSON format
-    stations = XLSX.utils.sheet_to_json(sheet);
+    // Convert sheet data to JSON format with updated column names and split names
+    stations = XLSX.utils.sheet_to_json(sheet).map(station => {
+        // Extract primary and alternate names from English and Korean fields
+        const englishNames = station["English (Alternative Name)"].split(" (");
+        const primaryEnglish = englishNames[0].trim();
+        const alternateEnglish = englishNames[1] ? englishNames[1].replace(")", "").trim() : null;
+
+        const koreanNames = station["Korean (Hanja)"].split(" (");
+        const primaryKorean = koreanNames[0].trim();
+        const alternateKorean = koreanNames[1] ? koreanNames[1].replace(")", "").trim() : null;
+
+        return {
+            name: primaryEnglish,
+            altName: alternateEnglish,
+            korean: primaryKorean,
+            altKorean: alternateKorean,
+            distance: station["Distance from Start"],
+            line: station["Transfer Line"],
+            province: station["Province"]
+        };
+    });
 
     // Populate autocomplete with stations
     populateAutocomplete();
-
-    // Log the stations data to check if it loaded correctly
-    console.log(stations);
 }
 
 // Populate autocomplete dropdown for station selection
@@ -33,6 +49,13 @@ function populateAutocomplete() {
         const option = document.createElement("option");
         option.value = station.name;
         datalist.appendChild(option);
+
+        // Add alternate name if it exists
+        if (station.altName) {
+            const altOption = document.createElement("option");
+            altOption.value = station.altName;
+            datalist.appendChild(altOption);
+        }
     });
 
     startInput.setAttribute("list", "stationsList");
@@ -46,8 +69,15 @@ function findRoute() {
     const endStation = document.getElementById('endStation').value.trim();
     const routeOutput = document.getElementById('routeOutput');
 
-    const start = stations.find(station => station.name.toLowerCase() === startStation.toLowerCase());
-    const end = stations.find(station => station.name.toLowerCase() === endStation.toLowerCase());
+    // Find start and end stations, matching either primary or alternate names
+    const start = stations.find(station => 
+        station.name.toLowerCase() === startStation.toLowerCase() ||
+        (station.altName && station.altName.toLowerCase() === startStation.toLowerCase())
+    );
+    const end = stations.find(station => 
+        station.name.toLowerCase() === endStation.toLowerCase() ||
+        (station.altName && station.altName.toLowerCase() === endStation.toLowerCase())
+    );
 
     if (!start || !end) {
         routeOutput.innerText = "Please enter valid starting and destination stations.";
