@@ -1,0 +1,56 @@
+@font-face {
+    font-family: "KoreanFont";
+    src: url("fonts/Chongbong.ttf") format("truetype");
+}
+
+body {
+    font-family: Arial, sans-serif; /* English Font */
+}
+
+/* Apply KoreanFont specifically to Korean characters */
+body:lang(ko) {
+    font-family: "Chongbong.ttf", sans-serif;
+
+}
+h1 {
+    text-align: center;
+}
+.form-group {
+    margin: 20px 0;
+}
+label {
+    font-weight: bold;
+}
+input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+}
+button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+button:hover {
+    background-color: #0056b3;
+}
+.route-output {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    font-size: 16px;
+    line-height: 1.6;
+}
+.icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 5px;
+}
