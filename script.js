@@ -1,7 +1,7 @@
 // File input element to load the Excel file
 document.getElementById("findRouteButton").addEventListener("click", loadData);
 
-const url = 'https://raw.githubusercontent.com/DPRKExplained/route-planner/main/stations.xlsx';
+const url = 'https://github.com/DPRKExplained/route-planner/blob/main/stations.xlsx';
 
 async function loadData() {
     try {
