@@ -7,6 +7,11 @@ async function loadData() {
         if (!response.ok) {
             throw new Error(`Failed to fetch file. Status: ${response.status}`);
         }
+        const contentType = response.headers.get("content-type");
+        console.log("Content-Type:", contentType);  // Log the content type to verify it's application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+        if (!contentType || !contentType.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
+            throw new Error("File is not a valid Excel document.");
+        }
         const arrayBuffer = await response.arrayBuffer();
         const workbook = XLSX.read(arrayBuffer, { type: "array" });
         processWorkbook(workbook);
