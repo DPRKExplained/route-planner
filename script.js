@@ -3,7 +3,7 @@ document.getElementById("findRouteButton").addEventListener("click", loadData);
 
 async function loadData() {
     try {
-        const response = await fetch("https://github.com/DPRKExplained/route-planner/blob/main/stations.xlsx");
+        const response = await fetch(https://github.com/DPRKExplained/route-planner/blob/main/stations.xlsx);
         if (!response.ok) {
             throw new Error(`Failed to fetch file. Status: ${response.status}`);
         }
