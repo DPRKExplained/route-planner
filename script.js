@@ -73,8 +73,8 @@ function populateAutocomplete() {
 
 // Find and display the route between two stations with line and transfer details
 function findRoute() {
-    const startStation = document.getElementById('startStation").value.trim();
-    const endStation = document.getElementById('endStation").value.trim();
+    const startStation = document.getElementById('startStation').value.trim();
+    const endStation = document.getElementById('endStation').value.trim();
     const routeOutput = document.getElementById('routeOutput');
 
     // Find start and end stations, matching either primary or alternate names
