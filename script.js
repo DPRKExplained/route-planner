@@ -4,7 +4,7 @@ document.getElementById("findRouteButton").addEventListener("click", loadData);
 async function loadData() {
     try {
         // Fetch the Excel file using the URL (if it's hosted online) or input method
-        const response = await fetch('your-file-path.xlsx'); // Adjust the path
+        const response = await fetch('https://github.com/DPRKExplained/route-planner/blob/main/stations.xlsx'); // Adjust the path
         const arrayBuffer = await response.arrayBuffer();
 
         // Parse the file as a binary Excel workbook
