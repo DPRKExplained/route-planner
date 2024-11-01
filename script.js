@@ -13,30 +13,31 @@ async function loadExcel() {
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
     // Convert sheet data to JSON format with updated column names and split names
-    stations = XLSX.utils.sheet_to_json(sheet).map(station => {
-        // Check if each column exists before accessing it
-        const englishColumn = station["English (Alternative Name)"] || "";
-        const koreanColumn = station["Korean (Hanja)"] || "";
+    stations = XLSX.utils.sheet_to_json(sheet)
+        .filter(station => station["Korean (Hanja)"] && station["English (Alternative Name)"]) // Filter out empty rows
+        .map(station => {
+            // Parse the Korean name and Hanja
+            const koreanColumn = station["Korean (Hanja)"] || "";
+            const koreanNames = koreanColumn.split(" (");
+            const primaryKorean = koreanNames[0].trim();
+            const alternateKorean = koreanNames[1] ? koreanNames[1].replace(")", "").trim() : null;
 
-        // Split English and Korean names, handling missing values
-        const englishNames = englishColumn.split(" (");
-        const primaryEnglish = englishNames[0].trim();
-        const alternateEnglish = englishNames[1] ? englishNames[1].replace(")", "").trim() : null;
+            // Parse the English name and alternate name
+            const englishColumn = station["English (Alternative Name)"] || "";
+            const englishNames = englishColumn.split(" (");
+            const primaryEnglish = englishNames[0].trim();
+            const alternateEnglish = englishNames[1] ? englishNames[1].replace(")", "").trim() : null;
 
-        const koreanNames = koreanColumn.split(" (");
-        const primaryKorean = koreanNames[0].trim();
-        const alternateKorean = koreanNames[1] ? koreanNames[1].replace(")", "").trim() : null;
-
-        return {
-            name: primaryEnglish,
-            altName: alternateEnglish,
-            korean: primaryKorean,
-            altKorean: alternateKorean,
-            distance: station["Distance from Start"] || 0,  // Use 0 if distance is missing
-            line: station["Transfer Line"] || "Unknown Line",  // Default for missing line
-            province: station["Province"] || "Unknown Province"  // Default for missing province
-        };
-    });
+            return {
+                name: primaryEnglish,
+                altName: alternateEnglish,
+                korean: primaryKorean,
+                altKorean: alternateKorean,
+                distance: station["Distance from Start"] || 0,
+                line: station["Transfer Line"] || "Unknown Line",
+                province: station["Province"] || "Unknown Province"
+            };
+        });
 
     // Log the stations data to check if it loaded correctly
     console.log(stations);
@@ -72,8 +73,8 @@ function populateAutocomplete() {
 
 // Find and display the route between two stations with line and transfer details
 function findRoute() {
-    const startStation = document.getElementById('startStation').value.trim();
-    const endStation = document.getElementById('endStation').value.trim();
+    const startStation = document.getElementById('startStation").value.trim();
+    const endStation = document.getElementById('endStation").value.trim();
     const routeOutput = document.getElementById('routeOutput');
 
     // Find start and end stations, matching either primary or alternate names
