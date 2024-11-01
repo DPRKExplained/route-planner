@@ -12,35 +12,39 @@ async function loadExcel() {
     const workbook = XLSX.read(data, { type: 'array' });
     console.log(workbook);  // Log workbook to verify
 
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    console.log(sheet);  // Log sheet to verify
+    // Loop through each sheet and process its stations
+    stations = workbook.SheetNames.flatMap(sheetName => {
+        const sheet = workbook.Sheets[sheetName];
+        console.log(`Processing sheet: ${sheetName}`, sheet);  // Log each sheet to verify
 
-    // Convert sheet data to JSON format with updated column names and split names
-    stations = XLSX.utils.sheet_to_json(sheet)
-        .filter(station => station["Korean (Hanja)"] && station["English (Alternative Name)"]) // Filter out empty rows
-        .map(station => {
-            // Parse the Korean name and Hanja
-            const koreanColumn = station["Korean (Hanja)"] || "";
-            const koreanNames = koreanColumn.split(" (");
-            const primaryKorean = koreanNames[0].trim();
-            const alternateKorean = koreanNames[1] ? koreanNames[1].replace(")", "").trim() : null;
+        // Convert each sheet's data to JSON and add the line name (sheet name)
+        return XLSX.utils.sheet_to_json(sheet)
+            .filter(station => station["Korean (Hanja)"] && station["English (Alternative Name)"]) // Filter out empty rows
+            .map(station => {
+                // Parse the Korean name and Hanja
+                const koreanColumn = station["Korean (Hanja)"] || "";
+                const koreanNames = koreanColumn.split(" (");
+                const primaryKorean = koreanNames[0].trim();
+                const alternateKorean = koreanNames[1] ? koreanNames[1].replace(")", "").trim() : null;
 
-            // Parse the English name and alternate name
-            const englishColumn = station["English (Alternative Name)"] || "";
-            const englishNames = englishColumn.split(" (");
-            const primaryEnglish = englishNames[0].trim();
-            const alternateEnglish = englishNames[1] ? englishNames[1].replace(")", "").trim() : null;
+                // Parse the English name and alternate name
+                const englishColumn = station["English (Alternative Name)"] || "";
+                const englishNames = englishColumn.split(" (");
+                const primaryEnglish = englishNames[0].trim();
+                const alternateEnglish = englishNames[1] ? englishNames[1].replace(")", "").trim() : null;
 
-            return {
-                name: primaryEnglish,
-                altName: alternateEnglish,
-                korean: primaryKorean,
-                altKorean: alternateKorean,
-                distance: station["Distance from Start"] || 0,
-                line: station["Transfer Line"] || "Unknown Line",
-                province: station["Province"] || "Unknown Province"
-            };
-        });
+                return {
+                    name: primaryEnglish,
+                    altName: alternateEnglish,
+                    korean: primaryKorean,
+                    altKorean: alternateKorean,
+                    distance: station["Distance from Start"] || 0,
+                    line: sheetName,  // Assign the line name from the sheet name
+                    transferLine: station["Transfer Line"] || null,  // Include transfer line info if present
+                    province: station["Province"] || "Unknown Province"
+                };
+            });
+    });
 
     // Log the stations data to check if it loaded correctly
     console.log(stations);
@@ -48,7 +52,6 @@ async function loadExcel() {
     // Populate autocomplete with stations
     populateAutocomplete();
 }
-
 // Populate autocomplete dropdown for station selection
 function populateAutocomplete() {
     const startInput = document.getElementById('startStation');
