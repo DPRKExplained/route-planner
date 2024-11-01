@@ -1,73 +1,109 @@
-document.addEventListener("DOMContentLoaded", function () {
-    // Define the stations array globally
-    let stations = [];
+// Data structure to store parsed Excel data
+let stationsData = {};
 
-    // Load the Excel data and parse it into the stations array
-    function loadExcelData(workbookData) {
-        const sheetNames = workbookData.SheetNames;
+// Load data from Excel sheets
+async function loadData() {
+    // Load the XLSX library if not already available
+    if (typeof XLSX === 'undefined') {
+        console.error("XLSX library not loaded.");
+        return;
+    }
+    
+    try {
+        const response = await fetch('path/to/your/excel-file.xlsx');
+        const arrayBuffer = await response.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { type: "array" });
 
-        sheetNames.forEach(sheetName => {
-            const sheet = workbookData.Sheets[sheetName];
-            const range = XLSX.utils.decode_range(sheet['!ref']);
+        // Iterate over each sheet
+        workbook.SheetNames.forEach((sheetName) => {
+            const sheet = workbook.Sheets[sheetName];
+            const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-            // Iterate over rows and map to station objects
-            for (let row = 3; row <= range.e.r; row++) { // Assuming data starts from row 4 (index 3)
-                const korean = sheet[`A${row + 1}`]?.v || "";
-                const altName = sheet[`B${row + 1}`]?.v || "";
-                const distance = sheet[`C${row + 1}`]?.v || 0;
-                const transferLine = sheet[`D${row + 1}`]?.v || "None";
-                const province = sheet[`E${row + 1}`]?.v || "Unknown";
-
-                stations.push({
-                    korean: korean,
-                    name: altName,
-                    distance: distance,
-                    transferLine: transferLine,
-                    province: province,
-                    line: sheetName
-                });
-            }
+            // Parse each row of the sheet
+            const lineData = [];
+            jsonData.forEach((row, index) => {
+                if (index > 1) { // Skip headers
+                    const [korean, english, distance, transferLine, province] = row;
+                    lineData.push({
+                        korean: korean || '',
+                        english: english || '',
+                        distance: parseFloat(distance) || 0,
+                        transferLine: transferLine || '',
+                        province: province || ''
+                    });
+                }
+            });
+            stationsData[sheetName] = lineData;
         });
 
-        console.log("Stations loaded:", stations); // Confirm data is loaded
+        console.log("Data loaded successfully:", stationsData);
+    } catch (error) {
+        console.error("Error loading Excel file:", error);
+    }
+}
+
+// Function to find route between two stations
+function findRoute() {
+    const startStation = document.getElementById("startStation").value.trim();
+    const destinationStation = document.getElementById("destinationStation").value.trim();
+
+    if (!startStation || !destinationStation) {
+        displayResult("Please enter valid starting and destination stations.");
+        return;
     }
 
-    // Function to handle the route finding based on user input
-    function findRoute() {
-        // Get user input
-        const userInputStartStation = document.getElementById("start").value.trim();
-        const userInputEndStation = document.getElementById("end").value.trim();
+    // Search for route within the dataset
+    let startFound = null;
+    let destinationFound = null;
+    let distance = 0;
 
-        // Find the stations in the parsed data
-        const startStation = stations.find(station => station.name === userInputStartStation);
-        const endStation = stations.find(station => station.name === userInputEndStation);
+    // Search through each line in stationsData
+    for (let line in stationsData) {
+        const lineStations = stationsData[line];
 
-        // Log for debugging
-        console.log("Start Station:", startStation);
-        console.log("End Station:", endStation);
+        for (let i = 0; i < lineStations.length; i++) {
+            const station = lineStations[i];
 
-        // Check if both stations are valid
-        if (!startStation || !endStation) {
-            alert("Please enter valid starting and destination stations.");
-            return;
+            if (station.english === startStation || station.korean === startStation) {
+                startFound = { station, line, index: i };
+            }
+
+            if (station.english === destinationStation || station.korean === destinationStation) {
+                destinationFound = { station, line, index: i };
+            }
+
+            // If both stations found on the same line, calculate distance
+            if (startFound && destinationFound && startFound.line === destinationFound.line) {
+                distance = Math.abs(destinationFound.station.distance - startFound.station.distance);
+                displayResult(`Route found on ${startFound.line}. Distance: ${distance} km.`);
+                return;
+            }
         }
-
-        // Calculate and display route details
-        const distance = Math.abs(endStation.distance - startStation.distance);
-        const route = `From ${startStation.name} to ${endStation.name}: ${distance.toFixed(1)} km`;
-        document.getElementById("output").textContent = route;
     }
 
-    // Event listener for the 'Find Route' button
-    document.getElementById("findRouteButton").addEventListener("click", findRoute);
+    // If a route wasn't found
+    if (!startFound || !destinationFound) {
+        displayResult("One or both stations could not be found.");
+    } else {
+        displayResult(`No direct route found between ${startStation} and ${destinationStation}.`);
+    }
+}
 
-    // Sample workbook data loading function for testing
-    // Replace 'data.xlsx' with your actual data file
-    fetch('data.xlsx')
-        .then(response => response.arrayBuffer())
-        .then(data => {
-            const workbook = XLSX.read(data, { type: 'array' });
-            loadExcelData(workbook);
-        })
-        .catch(error => console.error("Error loading Excel data:", error));
+// Display result in the result div
+function displayResult(message) {
+    const resultDiv = document.getElementById("result");
+    resultDiv.textContent = message;
+}
+
+// Event listeners
+document.addEventListener("DOMContentLoaded", () => {
+    const findRouteButton = document.getElementById("findRouteButton");
+
+    // Load Excel data on page load
+    loadData();
+
+    // Bind button click to findRoute function
+    if (findRouteButton) {
+        findRouteButton.addEventListener("click", findRoute);
+    }
 });
