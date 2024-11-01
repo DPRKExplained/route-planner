@@ -1,14 +1,16 @@
 // File input element to load the Excel file
 document.getElementById("findRouteButton").addEventListener("click", loadData);
 
+const url = 'https://raw.githubusercontent.com/DPRKExplained/route-planner/main/stations.xlsx';
+
 async function loadData() {
     try {
-        const response = await fetch(https://github.com/DPRKExplained/route-planner/blob/main/stations.xlsx);
+        const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`Failed to fetch file. Status: ${response.status}`);
         }
         const contentType = response.headers.get("content-type");
-        console.log("Content-Type:", contentType);  // Log the content type to verify it's application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+        console.log("Content-Type:", contentType);
         if (!contentType || !contentType.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
             throw new Error("File is not a valid Excel document.");
         }
