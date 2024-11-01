@@ -43,6 +43,7 @@ async function loadExcel() {
 
     // Populate autocomplete with stations
     populateAutocomplete();
+}
 
 // Populate autocomplete dropdown for station selection
 function populateAutocomplete() {
