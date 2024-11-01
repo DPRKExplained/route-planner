@@ -3,19 +3,13 @@ document.getElementById("findRouteButton").addEventListener("click", loadData);
 
 async function loadData() {
     try {
-        // Fetch the Excel file using the URL (if it's hosted online) or input method
-        const response = await fetch('https://github.com/DPRKExplained/route-planner/blob/main/stations.xlsx'); // Adjust the path
+        const response = await fetch("https://github.com/DPRKExplained/route-planner/blob/main/stations.xlsx");
+        if (!response.ok) {
+            throw new Error(`Failed to fetch file. Status: ${response.status}`);
+        }
         const arrayBuffer = await response.arrayBuffer();
-
-        // Parse the file as a binary Excel workbook
-        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-        const sheetName = workbook.SheetNames[0]; // Access the first sheet
-        const worksheet = workbook.Sheets[sheetName];
-        
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        console.log("Excel Data:", jsonData);
-
-        processStations(jsonData);
+        const workbook = XLSX.read(arrayBuffer, { type: "array" });
+        processWorkbook(workbook);
     } catch (error) {
         console.error("Error loading Excel file:", error);
     }
